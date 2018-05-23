@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4929d312d1cbc7757b1c9422929a5a8147b5b5524f28b2a0c995bff4ce59d2d4
+-- hash: 71b3a9f2fef58e7b431e70d756947933e06e635891453aebb67117bab9ed79d1
 
 name:           tbqueue-livelock
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      TBQueue
   other-modules:
       Paths_tbqueue_livelock
   hs-source-dirs:

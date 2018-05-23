@@ -2,8 +2,8 @@ module Lib where
 
 import Control.Concurrent
 import Control.Concurrent.Async
-import Control.Concurrent.STM
-import Control.Concurrent.STM.TBQueue
+import Control.Concurrent.STM (atomically)
+import TBQueue
 import Control.Monad
 import Data.Functor
 import System.Random
