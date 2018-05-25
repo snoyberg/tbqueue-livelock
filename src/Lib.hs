@@ -37,7 +37,7 @@ burn :: IO ()
 burn = do
   tbq <- newTBQueueIO 10
   forever $ timeIt $ do
-    (replicateConcurrently_ asyncCount (writeQ tbq) *> atomically (closeTBQueue tbq))
+    replicateConcurrently_ asyncCount (writeQ tbq)
       `concurrently_` replicateConcurrently_ asyncCount (peekQ tbq)
       `concurrently_` replicateConcurrently_ asyncCount (readQ tbq)
     putStrLn "Successfully waited"
