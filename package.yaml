@@ -51,3 +51,15 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - tbqueue-livelock
+
+benchmarks:
+  benchmark:
+    main: Main.hs
+    source-dirs: bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N40
+    dependencies:
+    - tbqueue-livelock
+    - gauge

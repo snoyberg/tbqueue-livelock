@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: adbb57f0b8061647d9070e438bfdac5262ca644389482a4562009bce6b5f2122
+-- hash: fbf1537c7c966a1815f76d03ce77db0ddf58bb1a721fea285889aa119c4f5671
 
 name:           tbqueue-livelock
 version:        0.1.0.0
@@ -69,6 +69,25 @@ test-suite tbqueue-livelock-test
   build-depends:
       async
     , base >=4.7 && <5
+    , random
+    , stm
+    , tbqueue-livelock
+    , timeit
+    , vector
+  default-language: Haskell2010
+
+benchmark benchmark
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_tbqueue_livelock
+  hs-source-dirs:
+      bench
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N40
+  build-depends:
+      async
+    , base >=4.7 && <5
+    , gauge
     , random
     , stm
     , tbqueue-livelock
