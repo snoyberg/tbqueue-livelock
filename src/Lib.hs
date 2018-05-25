@@ -13,25 +13,20 @@ transactionRepeats :: Int
 transactionRepeats = 100
 
 writeQ :: TBQueue Int -> IO ()
-writeQ q = void $ replicateM transactionRepeats $ do
-  atomically $ do
-    writeTBQueue q 0
+writeQ q = replicateM_ transactionRepeats $ do
+  atomically $ void $ writeTBQueue q 0
   val <- randomRIO (1, 100)
   threadDelay val
 
 readQ :: TBQueue Int -> IO ()
-readQ q = void $ replicateM transactionRepeats $ do
-  atomically $ do
-    _ <- readTBQueue q
-    return ()
+readQ q = replicateM_ transactionRepeats $ do
+  atomically $ void $ readTBQueue q
   val <- randomRIO (1, 100)
   threadDelay val
 
 peekQ :: TBQueue Int -> IO ()
 peekQ q = void $ replicateM transactionRepeats $ do
-  atomically $ do
-    _ <- peekTBQueue q
-    return ()
+  atomically $ void $ peekTBQueue q
   val <- randomRIO (1, 100)
   threadDelay val
 
@@ -42,9 +37,7 @@ burn :: IO ()
 burn = do
   tbq <- newTBQueueIO 10
   forever $ timeIt $ do
-    _ <- replicateM asyncCount (async (writeQ tbq))
-    asyncs <- replicateM asyncCount (async (peekQ tbq))
-    _ <- replicateM asyncCount (async (writeQ tbq))
-    asyncs <- replicateM asyncCount (async (readQ tbq))
-    wait (head asyncs)
+    (replicateConcurrently_ asyncCount (writeQ tbq) *> atomically (closeTBQueue tbq))
+      `concurrently_` replicateConcurrently_ asyncCount (peekQ tbq)
+      `concurrently_` replicateConcurrently_ asyncCount (readQ tbq)
     putStrLn "Successfully waited"
