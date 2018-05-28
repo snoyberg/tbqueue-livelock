@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module TBQueue (
+module VectorBased (
         -- * TBQueue
         TBQueue,
         newTBQueueIO,

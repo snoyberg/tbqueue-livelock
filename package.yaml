@@ -29,34 +29,15 @@ dependencies:
 
 library:
   source-dirs: src
-
-executables:
-  tbqueue-livelock-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N40
-    dependencies:
-    - tbqueue-livelock
-
-tests:
-  tbqueue-livelock-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - tbqueue-livelock
+  ghc-options:
+  - -O2
 
 benchmarks:
   benchmark:
     main: Main.hs
     source-dirs: bench
     ghc-options:
+    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N40
