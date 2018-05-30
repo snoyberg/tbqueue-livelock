@@ -3,6 +3,7 @@ import Control.Concurrent.STM
 import Control.Monad
 import Gauge
 import qualified VectorBased as V
+import qualified UnliftedArrayBased as U
 import qualified OneTVar as One
 import qualified AmTQueue1 as AmT
 import qualified RTTQueue1 as RT1
@@ -14,6 +15,7 @@ main = defaultMain
   , bench "TQueue" $ whnfIO $ run (const newTQueueIO) writeTQueue readTQueue
   , bench "TBQueue" $ whnfIO $ run newTBQueueIO writeTBQueue readTBQueue
   , bench "vector based" $ whnfIO $ run V.newTBQueueIO V.writeTBQueue V.readTBQueue
+  , bench "unlifted array based" $ whnfIO $ run U.newTBQueueIO U.writeTBQueue U.readTBQueue
   , bench "one tvar" $ whnfIO $ run One.newTBQueueIO One.writeTBQueue One.readTBQueue
   , bench "AmTQueue1" $ whnfIO $ run (const AmT.newTQueueIO) AmT.writeTQueue AmT.readTQueue
   , bench "RTTQueue1" $ whnfIO $ run (const RT1.newTQueueIO) RT1.writeTQueue RT1.readTQueue

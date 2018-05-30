@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1ff58520d3512e5db769caddc7b69fe7af6b68bc80593868ea7e316af6e66412
+-- hash: 4d703b719a299ad18a048c7dd7428ac6e16f628f262f0bd1f53e5e61f2fd8dac
 
 name:           tbqueue-livelock
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       OneTVar
       RTTQueue1
       RTTQueue2
+      UnliftedArrayBased
       VectorBased
   other-modules:
       Paths_tbqueue_livelock
@@ -39,6 +40,7 @@ library
   build-depends:
       async
     , base >=4.7 && <5
+    , primitive
     , random
     , stm
     , timeit
@@ -57,6 +59,7 @@ benchmark benchmark
       async
     , base >=4.7 && <5
     , gauge
+    , primitive
     , random
     , stm
     , tbqueue-livelock
