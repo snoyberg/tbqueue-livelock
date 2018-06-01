@@ -12,12 +12,27 @@ import GHC.Conc (STM, TVar, writeTVar, readTVar, retry, newTVarIO)
 import qualified Data.Primitive.UnliftedArray as U
 import Control.Monad (forM_)
 
+data Pair = Pair
+  { nextRead :: !Int
+  , count :: !Int
+  }
+
+modAdd :: Int -- ^ size
+       -> Int -- ^ x
+       -> Int -- ^ y
+       -> Int
+modAdd size x y
+    | out >= size = out - size
+    | otherwise = out
+  where
+    out = x + y
+{-# INLINE modAdd #-}
+
 -- | 'TBQueue' is an abstract type representing a bounded FIFO channel.
 --
 -- @since 2.4
 data TBQueue a = TBQueue
-  { nextRead :: !(TVar Int)
-  , count :: !(TVar Int)
+  { pair :: !(TVar Pair)
   , slots :: !(U.UnliftedArray (TVar a))
   }
 
@@ -27,8 +42,7 @@ data TBQueue a = TBQueue
 -- possible.
 newTBQueueIO :: Int -> IO (TBQueue a)
 newTBQueueIO size = TBQueue
-  <$> newTVarIO 0
-  <*> newTVarIO 0
+  <$> newTVarIO (Pair 0 0)
   <*> replicateMU size (newTVarIO $ error "newTBQueueIO")
 
 replicateMU :: U.PrimUnlifted a => Int -> IO a -> IO (U.UnliftedArray a)
@@ -40,37 +54,36 @@ replicateMU size action = do
   U.unsafeFreezeUnliftedArray mu
 
 -- |Write a value to a 'TBQueue'; blocks if the queue is full.
-writeTBQueue :: TBQueue a -> a -> STM Bool
+writeTBQueue :: TBQueue a -> a -> STM ()
 writeTBQueue TBQueue {..} a = do
-      count' <- readTVar count
+      Pair read' count' <- readTVar pair
       if count' >= U.sizeofUnliftedArray slots
         then retry
         else do
-          writeTVar count $ count' + 1
-          read' <- readTVar nextRead
-          let idx = (read' + count') `mod` U.sizeofUnliftedArray slots
+          writeTVar pair $! Pair read' $ count' + 1
+          let idx = modAdd (U.sizeofUnliftedArray slots) read' count'
           writeTVar (U.indexUnliftedArray slots idx) a
-          pure True
+{-# INLINABLE writeTBQueue #-}
 
 -- |Read the next value from the 'TBQueue'.
-readTBQueue :: TBQueue a -> STM (Maybe a)
+readTBQueue :: TBQueue a -> STM a
 readTBQueue TBQueue {..} = do
-  count' <- readTVar count
+  Pair read' count' <- readTVar pair
   if count' == 0
     then retry
     else do
-      writeTVar count $! count' - 1
-      read' <- readTVar nextRead
-      writeTVar nextRead $! (read' + 1) `mod` U.sizeofUnliftedArray slots
-      fmap Just $ readTVar $ U.indexUnliftedArray slots read'
+      writeTVar pair $! Pair
+        (modAdd (U.sizeofUnliftedArray slots) read' 1)
+        (count' - 1)
+      readTVar $ U.indexUnliftedArray slots read'
+{-# INLINABLE readTBQueue #-}
 
 -- | Get the next value from the @TBQueue@ without removing it,
 -- retrying if the channel is empty.
-peekTBQueue :: TBQueue a -> STM (Maybe a)
+peekTBQueue :: TBQueue a -> STM a
 peekTBQueue TBQueue {..} = do
-  count' <- readTVar count
+  Pair read' count' <- readTVar pair
   if count' == 0
     then retry
-    else do
-      read' <- readTVar nextRead
-      fmap Just $ readTVar $ U.indexUnliftedArray slots read'
+    else readTVar $ U.indexUnliftedArray slots read'
+{-# INLINABLE peekTBQueue #-}
